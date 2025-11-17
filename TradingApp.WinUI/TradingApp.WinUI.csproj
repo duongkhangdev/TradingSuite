@@ -22,28 +22,28 @@
 
   <ItemGroup>
     <Reference Include="FluentListView">
-      <HintPath>..\..\Library\FluentListView\FluentListView\bin\Debug\net9.0-windows\FluentListView.dll</HintPath>
+      <HintPath>..\..\..\Library\FluentListView\FluentListView\bin\Debug\net9.0-windows\FluentListView.dll</HintPath>
     </Reference>
     <Reference Include="WeifenLuo.WinFormsUI.Docking">
-      <HintPath>..\..\Library\dockpanelsuite\WinFormsUI\bin\Debug\net9.0-windows\WeifenLuo.WinFormsUI.Docking.dll</HintPath>
+      <HintPath>..\..\..\Library\dockpanelsuite\WinFormsUI\bin\Debug\net9.0-windows\WeifenLuo.WinFormsUI.Docking.dll</HintPath>
     </Reference>
     <Reference Include="WeifenLuo.WinFormsUI.Docking.ThemeVS2003">
-      <HintPath>..\..\Library\dockpanelsuite\WinFormsUI\bin\Debug\net9.0-windows\WeifenLuo.WinFormsUI.Docking.ThemeVS2003.dll</HintPath>
+      <HintPath>..\..\..\Library\dockpanelsuite\WinFormsUI\bin\Debug\net9.0-windows\WeifenLuo.WinFormsUI.Docking.ThemeVS2003.dll</HintPath>
     </Reference>
     <Reference Include="WeifenLuo.WinFormsUI.Docking.ThemeVS2005">
-      <HintPath>..\..\Library\dockpanelsuite\WinFormsUI\bin\Debug\net9.0-windows\WeifenLuo.WinFormsUI.Docking.ThemeVS2005.dll</HintPath>
+      <HintPath>..\..\..\Library\dockpanelsuite\WinFormsUI\bin\Debug\net9.0-windows\WeifenLuo.WinFormsUI.Docking.ThemeVS2005.dll</HintPath>
     </Reference>
     <Reference Include="WeifenLuo.WinFormsUI.Docking.ThemeVS2005Multithreading">
-      <HintPath>..\..\Library\dockpanelsuite\WinFormsUI\bin\Debug\net9.0-windows\WeifenLuo.WinFormsUI.Docking.ThemeVS2005Multithreading.dll</HintPath>
+      <HintPath>..\..\..\Library\dockpanelsuite\WinFormsUI\bin\Debug\net9.0-windows\WeifenLuo.WinFormsUI.Docking.ThemeVS2005Multithreading.dll</HintPath>
     </Reference>
     <Reference Include="WeifenLuo.WinFormsUI.Docking.ThemeVS2012">
-      <HintPath>..\..\Library\dockpanelsuite\WinFormsUI\bin\Debug\net9.0-windows\WeifenLuo.WinFormsUI.Docking.ThemeVS2012.dll</HintPath>
+      <HintPath>..\..\..\Library\dockpanelsuite\WinFormsUI\bin\Debug\net9.0-windows\WeifenLuo.WinFormsUI.Docking.ThemeVS2012.dll</HintPath>
     </Reference>
     <Reference Include="WeifenLuo.WinFormsUI.Docking.ThemeVS2013">
-      <HintPath>..\..\Library\dockpanelsuite\WinFormsUI\bin\Debug\net9.0-windows\WeifenLuo.WinFormsUI.Docking.ThemeVS2013.dll</HintPath>
+      <HintPath>..\..\..\Library\dockpanelsuite\WinFormsUI\bin\Debug\net9.0-windows\WeifenLuo.WinFormsUI.Docking.ThemeVS2013.dll</HintPath>
     </Reference>
     <Reference Include="WeifenLuo.WinFormsUI.Docking.ThemeVS2015">
-      <HintPath>..\..\Library\dockpanelsuite\WinFormsUI\bin\Debug\net9.0-windows\WeifenLuo.WinFormsUI.Docking.ThemeVS2015.dll</HintPath>
+      <HintPath>..\..\..\Library\dockpanelsuite\WinFormsUI\bin\Debug\net9.0-windows\WeifenLuo.WinFormsUI.Docking.ThemeVS2015.dll</HintPath>
     </Reference>
   </ItemGroup>
 
