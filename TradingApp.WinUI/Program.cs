@@ -63,6 +63,7 @@ namespace TradingApp.WinUI
                     // services & factories from ChartPro
                     services.AddSingleton<IChartDataService, DemoChartDataService>();
                     services.AddSingleton<IChartService, ChartService>();
+                    services.AddSingleton<ISubPlotService>(sp => new SubPlotService(sp.GetRequiredService<IChartService>()));
                     services.AddSingleton<IChartDocumentFactory, ChartDocumentFactory>();
 
                     // UI roots

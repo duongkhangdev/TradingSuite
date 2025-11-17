@@ -162,8 +162,8 @@ namespace TradingApp.WinUI
             else
                 accounts?.Show(_dockPanel, DockState.DockLeft);
 
-            var pos = ShowPositions(true);
-            pos?.Show(_dockPanel, DockState.DockBottom);
+            var pos = ShowPositions(true);  
+            pos?.Show(_dockPanel, DockState.DockBottomAutoHide);
 
             var orders = ShowOrders(true);
             var history = ShowHistory(true);
@@ -202,7 +202,7 @@ namespace TradingApp.WinUI
             {
                 _positionsDock = new PositionsDock();
                 _positionsDock.PositionDoubleClicked += Positions_PositionDoubleClicked;
-                _positionsDock.Show(_dockPanel, DockState.DockBottom);
+                _positionsDock.Show(_dockPanel, DockState.DockBottomAutoHide);
             }
 
             _positionsDock?.Activate();
@@ -215,7 +215,7 @@ namespace TradingApp.WinUI
             {
                 _ordersDock = new OrdersDock();
                 _ordersDock.OrderDoubleClicked += Orders_OrderDoubleClicked;
-                _ordersDock.Show(_dockPanel, DockState.DockBottom);
+                _ordersDock.Show(_dockPanel, DockState.DockBottomAutoHide);
             }
 
             _ordersDock?.Activate();
@@ -228,7 +228,7 @@ namespace TradingApp.WinUI
             {
                 _historyDock = new HistoryDock();
                 _historyDock.TradeDoubleClicked += History_TradeDoubleClicked;
-                _historyDock.Show(_dockPanel, DockState.DockBottom);
+                _historyDock.Show(_dockPanel, DockState.DockBottomAutoHide);
             }
 
             _historyDock?.Activate();
@@ -241,7 +241,7 @@ namespace TradingApp.WinUI
             {
                 _signalsDock = new SignalsDock();
                 _signalsDock.SignalDoubleClicked += Signals_SignalDoubleClicked;
-                _signalsDock.Show(_dockPanel, DockState.DockRight);
+                _signalsDock.Show(_dockPanel, DockState.DockRightAutoHide);
             }
 
             _signalsDock?.Activate();
