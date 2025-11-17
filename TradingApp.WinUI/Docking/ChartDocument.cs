@@ -1,19 +1,20 @@
+﻿using ChartPro;
+using ChartPro.Services;
+using ChartPro.Toolbars;
+using Cuckoo.Shared;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using ScottPlot;
+using ScottPlot.Plottables;
+using ScottPlot.WinForms;
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Microsoft.Extensions.Logging;
-using ScottPlot;
-using ScottPlot.WinForms;
-using ChartPro.Services;
-using ChartPro.Toolbars;
 using WeifenLuo.WinFormsUI.Docking;
-using System.Collections.Generic;
-using ChartPro;
-using Cuckoo.Shared;
-using Microsoft.Extensions.Logging.Abstractions;
 
 namespace TradingApp.WinUI.Docking
 {
@@ -41,20 +42,25 @@ namespace TradingApp.WinUI.Docking
         private readonly IQuoteService _quoteService;
         private readonly IChartService _chartService;
         private readonly IChartSubplotService _subPlotService;
+        private readonly IChartTechnicalService _chartTechnicalService;
         private CancellationTokenSource? _cts;
 
         public string Symbol;
         public string Timeframe;
 
+        private List<PlottableModel>? _rsiPlottables; // store RSI plottables if needed for future management
+
         public ChartDocument(
             IQuoteService quoteService, 
             IChartService chartService,
             IChartSubplotService subPlotService,
+            IChartTechnicalService chartTechnicalService,
             ILogger<ChartDocument> logger)
         {
             _quoteService = quoteService;
             _chartService = chartService;
             _subPlotService = subPlotService;
+            _chartTechnicalService = chartTechnicalService;
             _logger = logger;   
 
             TabText = Text;
@@ -97,6 +103,13 @@ namespace TradingApp.WinUI.Docking
             Disposed += (s, e) => _cts?.Cancel();
         }
 
+        public List<AppQuote>? AppQuotes;
+
+        private CandlestickPlot? candlestickPlot = null;
+
+        // Cache times extracted from QuoteService for subplot rendering (X values aligned with price)
+        private double[] _times = Array.Empty<double>();
+
         private void ApplyRightAxisWidthToAll()
         {
             try
@@ -126,10 +139,10 @@ namespace TradingApp.WinUI.Docking
 
         private void RegisterSubplots()
         {
-            AddSubplot("RSI", initiallyVisible: true, (plt, times, vals) => _subPlotService.PlotRsi(plt, times, vals));
-            AddSubplot("MACD", initiallyVisible: false, (plt, times, vals) => _subPlotService.PlotMacd(plt, times, vals));
-            AddSubplot("CCI", initiallyVisible: false, (plt, times, vals) => _subPlotService.PlotCci(plt, times, vals));
-            AddSubplot("StochRSI", initiallyVisible: false, (plt, times, vals) => _subPlotService.PlotStochRsi(plt, times, vals));
+            //AddSubplot("RSI", initiallyVisible: true, (plt, times, vals) => _subPlotService.PlotRsi(plt, times, vals));
+            //AddSubplot("MACD", initiallyVisible: false, (plt, times, vals) => _subPlotService.PlotMacd(plt, times, vals));
+            //AddSubplot("CCI", initiallyVisible: false, (plt, times, vals) => _subPlotService.PlotCci(plt, times, vals));
+            //AddSubplot("StochRSI", initiallyVisible: false, (plt, times, vals) => _subPlotService.PlotStochRsi(plt, times, vals));
         }
 
         private void SyncIndicatorsXFromPrice()
@@ -214,30 +227,6 @@ namespace TradingApp.WinUI.Docking
             SyncIndicatorsXFromPrice();
         }
 
-        private static TimeSpan ParseTimeframe(string tf)
-        {
-            if (string.IsNullOrWhiteSpace(tf)) return TimeSpan.FromMinutes(1);
-            tf = tf.Trim().ToUpperInvariant();
-            try
-            {
-                if (tf.StartsWith("M") && int.TryParse(tf[1..], out int m))
-                    return TimeSpan.FromMinutes(m);
-                if (tf.StartsWith("H") && int.TryParse(tf[1..], out int h))
-                    return TimeSpan.FromHours(h);
-                if (tf.StartsWith("D") && int.TryParse(tf[1..], out int d))
-                    return TimeSpan.FromDays(d);
-                if (tf == "W")
-                    return TimeSpan.FromDays(7);
-                if (tf.StartsWith("W") && int.TryParse(tf[1..], out int wv))
-                    return TimeSpan.FromDays(7 * wv);
-            }
-            catch { }
-            return TimeSpan.FromMinutes(1);
-        }
-
-        private double[]? _lastTimes;
-        private double[]? _lastCloses;
-
         public async Task RefreshChartAsync()
         {
             try
@@ -247,52 +236,45 @@ namespace TradingApp.WinUI.Docking
                 var ct = _cts.Token;
 
                 var candles = await _quoteService.GetAsync(Symbol, Timeframe);
-                var interval = BrokerHelper.GetInterval(Timeframe);
-                var ohlcs = candles.ToOHLCs(interval);
+                if (candles is null || candles.Count == 0)
+                {
+                    _pricePlot.Plot.Clear();
+                    _pricePlot.Refresh();
+                    ApplyRightAxisWidthToAll();
+                    return;
+                }
 
-                // compute technicals using service
-                var tech = new ChartTechnicalService(new Microsoft.Extensions.Logging.Abstractions.NullLogger<ChartTechnicalService>());
-                await tech.IndicatorsCompute(Symbol, Timeframe, candles);
-                var dict = await tech.GetIndicatorsDictionary(Symbol, Timeframe);
+                // Build time axis (use DateTime->OADate so subplots align with price axis)
+                _times = candles.Select(c => c.Date.ToOADate()).ToArray();
 
-                var pplt = _pricePlot.Plot;
-                pplt.Clear();
-                _chartService.ApplyDefaultLayout(pplt);
-                var cs = pplt.Add.Candlestick(ohlcs);
-                _chartService.AssignPriceAxisRight(cs, pplt);
-                pplt.Axes.AutoScale();
+                // Keep reference of latest quotes for centralized renderer
+                AppQuotes = candles;
 
-                // Get times and closes for subplots
-                _lastTimes = dict != null && dict.TryGetValue("Times", out var tObj) && tObj is double[] tArr ? tArr : candles.Select(q => q.Date.ToOADate()).ToArray();
-                _lastCloses = dict != null && dict.TryGetValue("Closes", out var cObj) && cObj is double[] cArr ? cArr : candles.Select(q => Convert.ToDouble(q.Close)).ToArray();
+                // Compute technicals using the injected service
+                await _chartTechnicalService.IndicatorsCompute(Symbol, Timeframe, candles);
 
+                // Render price chart using centralized chart service
+                bool hasGap = true;
+                candlestickPlot = await _chartService.LoadAndRender(_pricePlot!, Symbol, Timeframe, hasGap, AppQuotes);
+
+                // Render visible subplots (tránh cross-thread: thao tác FormsPlot phải ở UI thread)
                 foreach (var sp in _subplots)
                 {
                     if (!sp.Plot.Visible) continue;
 
-                    double[] values = Array.Empty<double>();
-                    switch (sp.Key)
+                    if (sp.Key.Equals("RSI", StringComparison.OrdinalIgnoreCase) && candlestickPlot != null && AppQuotes != null)
                     {
-                        case "RSI":
-                            values = dict != null && dict.TryGetValue("RsiArr", out var rsiObj) && rsiObj is double[] rsiArr ? rsiArr : Array.Empty<double>();
-                            break;
-                        case "MACD":
-                            values = dict != null && dict.TryGetValue("MacdArr", out var macdObj) && macdObj is double[] macdArr ? macdArr : Array.Empty<double>();
-                            break;
-                        case "CCI":
-                            values = dict != null && dict.TryGetValue("CciArr", out var cciObj) && cciObj is double[] cciArr ? cciArr : Array.Empty<double>();
-                            break;
-                        case "StochRSI":
-                            values = dict != null && dict.TryGetValue("StochRsiArr", out var stObj) && stObj is double[] stArr ? stArr : Array.Empty<double>();
-                            break;
+                        _rsiPlottables = await Cuckoo_RsiDetector.Draw_SubChart(sp.Plot, candlestickPlot!, AppQuotes!, Symbol, Timeframe);
+                        sp.Plot.Refresh();
                     }
-
-                    sp.Render(sp.Plot.Plot, _lastTimes, values);
-                    sp.Plot.Refresh();
+                    else
+                    {
+                        await _subPlotService.LoadAndRender(sp.Plot, Symbol, Timeframe, sp.Key);
+                    }
                 }
 
-                _pricePlot.Refresh();
                 ApplyRightAxisWidthToAll();
+                SyncIndicatorsXFromPrice();
             }
             catch (OperationCanceledException)
             {
@@ -302,11 +284,6 @@ namespace TradingApp.WinUI.Docking
                 _logger.LogError(ex, "Failed to refresh chart for {Symbol} {Timeframe}", Symbol, Timeframe);
                 MessageBox.Show(this, ex.Message, "Chart Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-        }
-
-        protected override string GetPersistString()
-        {
-            return $"{nameof(ChartDocument)};{Symbol};{Timeframe}";
         }
     }
 }

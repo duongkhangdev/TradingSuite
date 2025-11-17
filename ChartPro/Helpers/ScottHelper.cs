@@ -2,6 +2,7 @@
 using ScottPlot;
 using ScottPlot.Plottables;
 using ScottPlot.WinForms;
+using Skender.Stock.Indicators;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -161,11 +162,11 @@ namespace ChartPro
 
         public static double GetXForIndex(CandlestickPlot candlePlot, List<AppQuote> quotes, AppQuote quote)
         {
-            var idx1 = quotes.FindIndex(x => x.Date == quote.Date);
+            var idx = quotes.FindIndex(x => x.Date == quote.Date);
             if (candlePlot.Sequential)
-                return idx1;
+                return idx;
             else
-                return NumericConversion.ToNumber(quotes[idx1].Date);
+                return NumericConversion.ToNumber(quotes[idx].Date);
         }
 
         public static double GetXForIndex(bool hasGap, List<AppQuote> quotes, int index)
@@ -174,6 +175,15 @@ namespace ChartPro
                 return index;
             else
                 return NumericConversion.ToNumber(quotes[index].Date);
+        }
+
+        public static double GetXForIndex(bool hasGap, List<AppQuote> quotes, AppQuote quote)
+        {
+            var idx = quotes.FindIndex(x => x.Date == quote.Date);
+            if (hasGap)
+                return idx;
+            else
+                return NumericConversion.ToNumber(quotes[idx].Date);
         }
 
         public static double GetXForIndexOffset(CandlestickPlot candlePlot, IReadOnlyList<OHLC> ohlcs, int index, int barsOffset)
