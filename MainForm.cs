@@ -30,7 +30,7 @@ namespace TradingApp.WinUI
         {
             InitializeComponent();
 
-            Text = "Trading Terminal (DockPanelSuite + FluentListView)";
+            Text = "Trading Terminal";
             WindowState = FormWindowState.Maximized;
 
             _dockPanel = new DockPanel
@@ -84,7 +84,8 @@ namespace TradingApp.WinUI
             {
                 try
                 {
-                    _dockPanel.LoadFromXml(LayoutFilePath, DeserializeContent);
+                    //_dockPanel.LoadFromXml(LayoutFilePath, DeserializeContent);
+                    CreateDefaultLayout();
                 }
                 catch
                 {
