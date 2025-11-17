@@ -2,22 +2,15 @@
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
+using System.Threading.Tasks; // for Task in symbol async handler
+using ChartPro; // SymbolComboBoxHelper namespace
 
 namespace ChartPro.Toolbars
 {
-    // Plan (pseudocode):
-    // - Remove existing ToolStripComboBox `_cbDataSource`.
-    // - Add ToolStripDropDownButton `_ddDataSource` labeled "Data Source".
-    // - Populate dropdown with items: None, TextFile, ExcelFile, SignalR, Websocket, RestApi.
-    // - Expose event `DataSourceChanged(CandleSource source, string label)` to notify consumers.
-    // - Wire each dropdown item click to raise `DataSourceChanged`.
-    // - Keep existing functionality (symbols, timeframes, refresh, indicators) unchanged.
-
     public class ChartTopToolbar : ToolStrip
     {
         private readonly ToolStripDropDownButton _ddDataSource;
-        private readonly ToolStripComboBox _cbSymbol;
-        private readonly ToolStripLabel _lblSymbol;
+        private readonly ToolStripComboBox _cbSymbol; // using helper now
         private readonly ToolStripLabel _lblTimeframe;
         private readonly ToolStripButton _btnRefresh;
         private readonly ToolStripDropDownButton _ddIndicators;
@@ -28,7 +21,7 @@ namespace ChartPro.Toolbars
         public event Action<string>? SymbolChanged;
         public event Action? RefreshRequested;
         public event Action<string, bool>? IndicatorToggled; // name, isVisible
-        public event Action<CandleSource, string>? DataSourceChanged; // new: data source selected
+        public event Action<CandleSource, string>? DataSourceChanged; // data source selected
 
         public ChartTopToolbar()
         {
@@ -37,7 +30,7 @@ namespace ChartPro.Toolbars
             RenderMode = ToolStripRenderMode.System;
             ImageScalingSize = new Size(16,16);
 
-            // Dropdown chọn Data Source
+            // Data Source dropdown
             _ddDataSource = new ToolStripDropDownButton("Data Source")
             {
                 Tag = "DataSource",
@@ -53,21 +46,17 @@ namespace ChartPro.Toolbars
             Items.Add(_ddDataSource);
             Items.Add(new ToolStripSeparator());
 
-            // Symbol combo
-            _lblSymbol = new ToolStripLabel("Symbol:");
-            _cbSymbol = new ToolStripComboBox
-            {
-                Name = "cbSymbol",
-                DropDownStyle = ComboBoxStyle.DropDownList,
-                AutoSize = false,
-                Width = 100
-            };
-            _cbSymbol.SelectedIndexChanged += (s, e) =>
-            {
-                if (_cbSymbol.SelectedItem is string sym)
+            // Symbol combo via helper (async handler bridged to synchronous event)
+            Items.Add(new ToolStripLabel("Symbol:"));
+            _cbSymbol = SymbolComboBoxHelper.Create(
+                SymbolComboBoxHelper.DefaultSymbols,
+                onSelectionChangedAsync: sym =>
+                {
                     SymbolChanged?.Invoke(sym);
-            };
-            Items.Add(_lblSymbol);
+                    return Task.CompletedTask;
+                },
+                selected: SymbolComboBoxHelper.DefaultSymbols.FirstOrDefault() ?? "" ,
+                width: 100);
             Items.Add(_cbSymbol);
             Items.Add(new ToolStripSeparator());
 
@@ -115,7 +104,6 @@ namespace ChartPro.Toolbars
             var mi = new ToolStripMenuItem(text);
             mi.Click += (s, e) =>
             {
-                // Optionally update button text to reflect selection (kept static per request)
                 DataSourceChanged?.Invoke(source, text);
             };
             _ddDataSource.DropDownItems.Add(mi);
@@ -125,7 +113,7 @@ namespace ChartPro.Toolbars
         {
             var mi = new ToolStripMenuItem(name)
             {
-                Checked = name == "RSI", // ví dụ mặc định chỉ RSI bật
+                Checked = name == "RSI", // default example only RSI enabled
                 CheckOnClick = true
             };
             mi.CheckedChanged += (s, e) => IndicatorToggled?.Invoke(name, mi.Checked);
@@ -134,19 +122,15 @@ namespace ChartPro.Toolbars
 
         public void Initialize(string symbol, string timeframe, string[]? symbols = null)
         {
-            // Populate symbols
-            _cbSymbol.Items.Clear();
-            if (symbols != null && symbols.Length > 0)
-            {
-                foreach (var s in symbols.Distinct())
-                    _cbSymbol.Items.Add(s);
-            }
-            else
-            {
-                _cbSymbol.Items.Add(symbol);
-            }
-            _cbSymbol.SelectedItem = symbol;
+            // Update symbols using helper
+            var list = symbols?.Distinct().ToArray() ?? new[] { symbol };
+            SymbolComboBoxHelper.SetSymbols(_cbSymbol, list, symbol);
             SetActiveTimeframe(timeframe);
+        }
+
+        public void UpdateSymbols(string[] symbols, string? selected = null)
+        {
+            SymbolComboBoxHelper.SetSymbols(_cbSymbol, symbols, selected);
         }
 
         private void SetActiveTimeframe(string tf)
@@ -169,8 +153,4 @@ namespace ChartPro.Toolbars
             TimeframeSelected?.Invoke(tf);
         }
     }
-
-    // Note: Assumes `CandleSource` is defined elsewhere in the project.
-    // If not, define it in a shared location:
-    // public enum CandleSource { None, TextFile, ExcelFile, SignalR, Websocket, RestApi }
 }

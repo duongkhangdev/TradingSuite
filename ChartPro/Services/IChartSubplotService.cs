@@ -2,7 +2,7 @@ using ScottPlot;
 
 namespace ChartPro.Services
 {
-    public interface ISubPlotService
+    public interface IChartSubplotService
     {
         void PlotRsi(Plot plt, double[] times, double[] rsi);
         void PlotMacd(Plot plt, double[] times, double[] macd);

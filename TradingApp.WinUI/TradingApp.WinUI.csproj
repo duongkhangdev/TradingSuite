@@ -29,6 +29,9 @@
     <Reference Include="Cuckoo.Shared">
       <HintPath>..\..\..\Trading\Cuckoo\Cuckoo.Shared\bin\Debug\net9.0\Cuckoo.Shared.dll</HintPath>
     </Reference>
+    <Reference Include="Cuckoo.WinLifetime">
+      <HintPath>..\..\..\Trading\Cuckoo\Cuckoo.WinLifetime\bin\Debug\net9.0-windows\Cuckoo.WinLifetime.dll</HintPath>
+    </Reference>
     <Reference Include="FluentListView">
       <HintPath>..\..\..\Library\FluentListView\FluentListView\bin\Debug\net9.0-windows\FluentListView.dll</HintPath>
     </Reference>

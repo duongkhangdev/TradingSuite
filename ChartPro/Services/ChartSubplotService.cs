@@ -3,11 +3,11 @@ using ScottPlot.Plottables;
 
 namespace ChartPro.Services
 {
-    public sealed class SubPlotService : ISubPlotService
+    public sealed class ChartSubplotService : IChartSubplotService
     {
         private readonly IChartService _chartService;
 
-        public SubPlotService(IChartService chartService)
+        public ChartSubplotService(IChartService chartService)
         {
             _chartService = chartService;
         }

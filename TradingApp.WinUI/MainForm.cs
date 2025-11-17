@@ -1,26 +1,22 @@
+using ChartPro;
+using ChartPro.Services;
+using Cuckoo.Shared;
+using Cuckoo.WinLifetime;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Serilog;
 using TradingApp.WinUI.Docking;
 using TradingApp.WinUI.Models;
 using WeifenLuo.WinFormsUI.Docking;
-using TradingApp.WinUI.Factories;
-using Cuckoo.Shared;
-using ChartPro.Services;
-using ChartPro;
 
 namespace TradingApp.WinUI
 {
     public class MainForm : Form
     {
         private readonly DockPanel _dockPanel;
-        private IChartDocumentFactory _chartFactory;
-
-        // services
-        private readonly IQuoteService _quoteService = new QuoteService(new Microsoft.Extensions.Logging.Abstractions.NullLogger<QuoteService>());
 
         private WatchlistDock? _watchlistDock;
         private PositionsDock? _positionsDock;
@@ -32,22 +28,22 @@ namespace TradingApp.WinUI
 
         private readonly List<ChartDocument> _openCharts = new();
 
+        private readonly IQuoteService _quoteService;
+        private readonly IFormProvider _formProvider;
+        private readonly IGuiContext _guiContext;
         private string LayoutFilePath =>
             Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "layout_trading.xml");
 
-        public MainForm() : this(new ChartDocumentFactory(
-            new ChartPro.Services.DemoChartDataService(),
-            new Microsoft.Extensions.Logging.Abstractions.NullLogger<ChartDocument>(),
-            new ChartPro.Services.ChartService(new QuoteService(new Microsoft.Extensions.Logging.Abstractions.NullLogger<QuoteService>()))
-))
+        public MainForm(
+            IQuoteService quoteService,
+            IFormProvider formProvider,
+            IGuiContext guiContext)
         {
-        }
-
-        public MainForm(IChartDocumentFactory chartFactory)
-        {
-            _chartFactory = chartFactory;
-
             InitializeComponent();
+
+            _quoteService = quoteService;
+            _formProvider = formProvider;
+            _guiContext = guiContext;
 
             Text = "Trading Terminal";
             WindowState = FormWindowState.Maximized;
@@ -102,12 +98,6 @@ namespace TradingApp.WinUI
             // load from file and push into quote service (can be extended for multiple symbols/timeframes)
             var quotes = await ReadQuotesFromFile();
 
-            // switch chart factory to QuoteService-backed data service when we have data
-            _chartFactory = ChartDocumentFactory.WithQuoteService(
-                _quoteService,
-                new Microsoft.Extensions.Logging.Abstractions.NullLogger<ChartDocument>(),
-                new ChartPro.Services.ChartService(_quoteService) // <-- Pass _quoteService here
-            );
 
             if (File.Exists(LayoutFilePath))
             {
@@ -131,42 +121,6 @@ namespace TradingApp.WinUI
         private void MainForm_FormClosing(object? sender, FormClosingEventArgs e)
         {
             _dockPanel.SaveAsXml(LayoutFilePath);
-        }
-
-        private IDockContent? DeserializeContent(string persistString)
-        {
-            if (string.IsNullOrWhiteSpace(persistString))
-                return null;
-
-            var parts = persistString.Split(';');
-
-            switch (parts[0])
-            {
-                case nameof(WatchlistDock):
-                    return ShowWatchlist(false);
-                case nameof(PositionsDock):
-                    return ShowPositions(false);
-                case nameof(OrdersDock):
-                    return ShowOrders(false);
-                case nameof(HistoryDock):
-                    return ShowHistory(false);
-                case nameof(SignalsDock):
-                    return ShowSignals(false);
-                case nameof(AccountsDock):
-                    return ShowAccounts(false);
-                case nameof(LogDock):
-                    return ShowLog(false);
-                case nameof(ChartDocument):
-                    if (parts.Length >= 3)
-                    {
-                        string symbol = parts[1];
-                        string timeframe = parts[2];
-                        return OpenChart(symbol, timeframe, false);
-                    }
-                    return OpenChart("XAUUSD", "M15", false);
-            }
-
-            return null;
         }
 
         private void CreateDefaultLayout()
@@ -330,7 +284,7 @@ namespace TradingApp.WinUI
 
         #endregion
 
-        private ChartDocument OpenChart(string symbol, string timeframe, bool show)
+        private async Task<ChartDocument> OpenChart(string symbol, string timeframe, bool show)
         {
             var existing = _openCharts.Find(c =>
                 c.Symbol.Equals(symbol, StringComparison.OrdinalIgnoreCase) &&
@@ -343,11 +297,14 @@ namespace TradingApp.WinUI
                 return existing;
             }
 
-            var doc = _chartFactory.Create(symbol, timeframe);
+            var form = await _formProvider.GetFormAsync<ChartDocument>();
+            form.Symbol = symbol;
+            form.Timeframe = timeframe;
 
-            doc.Show(_dockPanel, DockState.Document);
-            _openCharts.Add(doc);
-            return doc;
+            form!.Show(_dockPanel, DockState.Document);
+            
+            _openCharts.Add(form);
+            return form;
         }
 
         private void InitializeComponent()

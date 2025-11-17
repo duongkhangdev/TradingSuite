@@ -36,46 +36,27 @@ namespace TradingApp.WinUI.Docking
         }
 
         private readonly List<Subplot> _subplots = new();
-
-        private readonly IChartDataService _dataService;
+       
         private readonly ILogger<ChartDocument> _logger;
+        private readonly IQuoteService _quoteService;
         private readonly IChartService _chartService;
-        private readonly ISubPlotService _subPlotService;
+        private readonly IChartSubplotService _subPlotService;
         private CancellationTokenSource? _cts;
 
-        public string Symbol { get; }
-        public string Timeframe { get; private set; }
+        public string Symbol;
+        public string Timeframe;
 
-        private sealed class NoopLogger<T> : ILogger<T>
+        public ChartDocument(
+            IQuoteService quoteService, 
+            IChartService chartService,
+            IChartSubplotService subPlotService,
+            ILogger<ChartDocument> logger)
         {
-            IDisposable ILogger.BeginScope<TState>(TState state) => Dummy.Instance;
-            bool ILogger.IsEnabled(LogLevel logLevel) => false;
-            void ILogger.Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter) { }
-            private sealed class Dummy : IDisposable { public static readonly Dummy Instance = new(); public void Dispose() { } }
-        }
+            _quoteService = quoteService;
+            _chartService = chartService;
+            _subPlotService = subPlotService;
+            _logger = logger;   
 
-        // replace the default constructor with this DI-friendly fallback that uses QuoteService
-        public ChartDocument(string symbol, string timeframe)
-            : this(
-                symbol,
-                timeframe,
-                dataService: new QuoteChartDataService(new QuoteService(NullLogger<QuoteService>.Instance)),
-                logger: new NoopLogger<ChartDocument>(),
-                chartService: new ChartService(new QuoteService(NullLogger<QuoteService>.Instance)),
-                subPlotService: null
-            )
-        { }
-
-        public ChartDocument(string symbol, string timeframe, IChartDataService dataService, ILogger<ChartDocument>? logger = null, IChartService? chartService = null, ISubPlotService? subPlotService = null)
-        {
-            Symbol = symbol;
-            Timeframe = timeframe;
-            _dataService = dataService;
-            _logger = logger ?? new NoopLogger<ChartDocument>();
-            _chartService = chartService ?? throw new ArgumentNullException(nameof(chartService), "ChartDocument requires IChartService via DI to share QuoteService");
-            _subPlotService = subPlotService ?? new ChartPro.Services.SubPlotService(_chartService);
-
-            Text = $"{symbol},{timeframe}";
             TabText = Text;
 
             _container = new ToolStripContainer { Dock = DockStyle.Fill };
@@ -265,7 +246,7 @@ namespace TradingApp.WinUI.Docking
                 _cts = new CancellationTokenSource();
                 var ct = _cts.Token;
 
-                var candles = await _dataService.GetCandlesAsync(Symbol, Timeframe, 300, ct);
+                var candles = await _quoteService.GetAsync(Symbol, Timeframe);
                 var interval = BrokerHelper.GetInterval(Timeframe);
                 var ohlcs = candles.ToOHLCs(interval);
 
