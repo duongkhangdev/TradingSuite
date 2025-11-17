@@ -51,6 +51,10 @@
     </Reference>
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Services\" />
+  </ItemGroup>
+
   <!-- NOTE: Add your FluentListView reference here (project or DLL).
   <ItemGroup>
     <ProjectReference Include="..\FluentListView\FluentListView.csproj" />

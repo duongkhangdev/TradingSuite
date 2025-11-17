@@ -1,7 +1,12 @@
 using System;
 using System.Windows.Forms;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Serilog;
+using TradingApp.WinUI.Docking;
 using TradingApp.WinUI.Logging;
+using ChartPro.Services;
+using TradingApp.WinUI.Factories;
 
 namespace TradingApp.WinUI
 {
@@ -10,7 +15,10 @@ namespace TradingApp.WinUI
         [STAThread]
         static void Main()
         {
-            // Configure Serilog
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(false);
+
+            // Configure Serilog sinks (still used by UI log dock)
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Debug()
                 .WriteTo.Debug()
@@ -19,8 +27,7 @@ namespace TradingApp.WinUI
 
             try
             {
-                Application.EnableVisualStyles();
-                Application.SetCompatibleTextRenderingDefault(false);
+                using var host = CreateHostBuilder().Build();
 
                 Application.ThreadException += (s, e) =>
                 {
@@ -34,7 +41,8 @@ namespace TradingApp.WinUI
                 };
 
                 Log.Information("Application starting");
-                Application.Run(new MainForm());
+                var sp = host.Services;
+                Application.Run(sp.GetRequiredService<MainForm>());
             }
             catch (Exception ex)
             {
@@ -47,5 +55,18 @@ namespace TradingApp.WinUI
                 Log.CloseAndFlush();
             }
         }
+
+        private static IHostBuilder CreateHostBuilder()
+            => Host.CreateDefaultBuilder()
+                .ConfigureServices((ctx, services) =>
+                {
+                    // services & factories from ChartPro
+                    services.AddSingleton<IChartDataService, DemoChartDataService>();
+                    services.AddSingleton<IChartService, ChartService>();
+                    services.AddSingleton<IChartDocumentFactory, ChartDocumentFactory>();
+
+                    // UI roots
+                    services.AddSingleton<MainForm>();
+                });
     }
 }

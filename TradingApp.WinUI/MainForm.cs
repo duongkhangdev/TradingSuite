@@ -6,12 +6,14 @@ using Serilog;
 using TradingApp.WinUI.Docking;
 using TradingApp.WinUI.Models;
 using WeifenLuo.WinFormsUI.Docking;
+using TradingApp.WinUI.Factories;
 
 namespace TradingApp.WinUI
 {
     public class MainForm : Form
     {
         private readonly DockPanel _dockPanel;
+        private readonly IChartDocumentFactory _chartFactory;
 
         private WatchlistDock? _watchlistDock;
         private PositionsDock? _positionsDock;
@@ -26,8 +28,14 @@ namespace TradingApp.WinUI
         private string LayoutFilePath =>
             Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "layout_trading.xml");
 
-        public MainForm()
+        public MainForm() : this(new ChartDocumentFactory(new ChartPro.Services.DemoChartDataService(), new Microsoft.Extensions.Logging.Abstractions.NullLogger<ChartDocument>(), new ChartPro.Services.ChartService()))
         {
+        }
+
+        public MainForm(IChartDocumentFactory chartFactory)
+        {
+            _chartFactory = chartFactory;
+
             InitializeComponent();
 
             Text = "Trading Terminal";
@@ -315,7 +323,7 @@ namespace TradingApp.WinUI
                 return existing;
             }
 
-            var doc = new ChartDocument(symbol, timeframe);
+            var doc = _chartFactory.Create(symbol, timeframe);
 
             doc.Show(_dockPanel, DockState.Document);
             _openCharts.Add(doc);
@@ -328,7 +336,7 @@ namespace TradingApp.WinUI
             // 
             // MainForm
             // 
-            ClientSize = new Size(284, 261);
+            ClientSize = new Size(882, 521);
             IsMdiContainer = true;
             Name = "MainForm";
             ResumeLayout(false);
