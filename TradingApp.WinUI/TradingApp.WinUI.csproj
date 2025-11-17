@@ -21,6 +21,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\ChartPro\ChartPro.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="FluentListView">
       <HintPath>..\..\..\Library\FluentListView\FluentListView\bin\Debug\net9.0-windows\FluentListView.dll</HintPath>
     </Reference>

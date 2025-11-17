@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TradingApp.WinUI", "Trading
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TradingApp.WebApi", "TradingApp.WebApi\TradingApp.WebApi.csproj", "{B31E1D80-6218-3769-AED2-3013E6630166}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChartPro", "ChartPro\ChartPro.csproj", "{7FC335C1-324A-E906-3A60-D122DCDEEE59}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{B31E1D80-6218-3769-AED2-3013E6630166}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B31E1D80-6218-3769-AED2-3013E6630166}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B31E1D80-6218-3769-AED2-3013E6630166}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7FC335C1-324A-E906-3A60-D122DCDEEE59}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7FC335C1-324A-E906-3A60-D122DCDEEE59}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7FC335C1-324A-E906-3A60-D122DCDEEE59}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7FC335C1-324A-E906-3A60-D122DCDEEE59}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
