@@ -13,10 +13,14 @@
     <PackageReference Include="ScottPlot.WinForms" Version="5.1.57" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.11" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.11" />
+    <PackageReference Include="Serilog" Version="4.3.0" />
+    <PackageReference Include="Skender.Stock.Indicators" Version="2.7.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Helpers\" />
+    <Reference Include="Cuckoo.Shared">
+      <HintPath>..\..\..\Trading\Cuckoo\Cuckoo.Shared\bin\Debug\net9.0\Cuckoo.Shared.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>

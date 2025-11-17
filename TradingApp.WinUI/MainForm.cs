@@ -1,19 +1,26 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using Serilog;
 using TradingApp.WinUI.Docking;
 using TradingApp.WinUI.Models;
 using WeifenLuo.WinFormsUI.Docking;
 using TradingApp.WinUI.Factories;
+using Cuckoo.Shared;
+using ChartPro.Services;
+using ChartPro;
 
 namespace TradingApp.WinUI
 {
     public class MainForm : Form
     {
         private readonly DockPanel _dockPanel;
-        private readonly IChartDocumentFactory _chartFactory;
+        private IChartDocumentFactory _chartFactory;
+
+        // services
+        private readonly IQuoteService _quoteService = new QuoteService(new Microsoft.Extensions.Logging.Abstractions.NullLogger<QuoteService>());
 
         private WatchlistDock? _watchlistDock;
         private PositionsDock? _positionsDock;
@@ -28,7 +35,11 @@ namespace TradingApp.WinUI
         private string LayoutFilePath =>
             Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "layout_trading.xml");
 
-        public MainForm() : this(new ChartDocumentFactory(new ChartPro.Services.DemoChartDataService(), new Microsoft.Extensions.Logging.Abstractions.NullLogger<ChartDocument>(), new ChartPro.Services.ChartService()))
+        public MainForm() : this(new ChartDocumentFactory(
+            new ChartPro.Services.DemoChartDataService(),
+            new Microsoft.Extensions.Logging.Abstractions.NullLogger<ChartDocument>(),
+            new ChartPro.Services.ChartService(new QuoteService(new Microsoft.Extensions.Logging.Abstractions.NullLogger<QuoteService>()))
+))
         {
         }
 
@@ -86,13 +97,22 @@ namespace TradingApp.WinUI
             FormClosing += MainForm_FormClosing;
         }
 
-        private void MainForm_Load(object? sender, EventArgs e)
+        private async void MainForm_Load(object? sender, EventArgs e)
         {
+            // load from file and push into quote service (can be extended for multiple symbols/timeframes)
+            var quotes = await ReadQuotesFromFile();
+
+            // switch chart factory to QuoteService-backed data service when we have data
+            _chartFactory = ChartDocumentFactory.WithQuoteService(
+                _quoteService,
+                new Microsoft.Extensions.Logging.Abstractions.NullLogger<ChartDocument>(),
+                new ChartPro.Services.ChartService(_quoteService) // <-- Pass _quoteService here
+            );
+
             if (File.Exists(LayoutFilePath))
             {
                 try
                 {
-                    //_dockPanel.LoadFromXml(LayoutFilePath, DeserializeContent);
                     CreateDefaultLayout();
                 }
                 catch
@@ -341,6 +361,21 @@ namespace TradingApp.WinUI
             Name = "MainForm";
             ResumeLayout(false);
 
+        }
+
+        private async Task<List<AppQuote>?> ReadQuotesFromFile()
+        {
+            string _symbol = "XAUUSD";
+            string _timeframe = "M15";
+            var quotes = await AppHelper.ReadFile(_symbol, _timeframe);
+
+            // push to QuoteService storage
+            if (quotes != null && quotes.Count > 0)
+            {
+                _quoteService.AddOrUpdate(_symbol, _timeframe, quotes);
+            }
+
+            return quotes;
         }
 
         #region Demo data

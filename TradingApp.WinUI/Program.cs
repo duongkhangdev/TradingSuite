@@ -7,6 +7,7 @@ using TradingApp.WinUI.Docking;
 using TradingApp.WinUI.Logging;
 using ChartPro.Services;
 using TradingApp.WinUI.Factories;
+using ChartPro; // add for IQuoteService
 
 namespace TradingApp.WinUI
 {
@@ -60,8 +61,10 @@ namespace TradingApp.WinUI
             => Host.CreateDefaultBuilder()
                 .ConfigureServices((ctx, services) =>
                 {
-                    // services & factories from ChartPro
-                    services.AddSingleton<IChartDataService, DemoChartDataService>();
+                    // core chart services
+                    services.AddSingleton<IQuoteService, QuoteService>(); // register QuoteService for DI
+                    services.AddSingleton<IChartDataService>(sp =>
+    new QuoteChartDataService(sp.GetRequiredService<IQuoteService>())); // default data source (can be swapped to QuoteChartDataService later)
                     services.AddSingleton<IChartService, ChartService>();
                     services.AddSingleton<ISubPlotService>(sp => new SubPlotService(sp.GetRequiredService<IChartService>()));
                     services.AddSingleton<IChartDocumentFactory, ChartDocumentFactory>();

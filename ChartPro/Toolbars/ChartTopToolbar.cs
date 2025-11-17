@@ -5,9 +5,17 @@ using System.Windows.Forms;
 
 namespace ChartPro.Toolbars
 {
+    // Plan (pseudocode):
+    // - Remove existing ToolStripComboBox `_cbDataSource`.
+    // - Add ToolStripDropDownButton `_ddDataSource` labeled "Data Source".
+    // - Populate dropdown with items: None, TextFile, ExcelFile, SignalR, Websocket, RestApi.
+    // - Expose event `DataSourceChanged(CandleSource source, string label)` to notify consumers.
+    // - Wire each dropdown item click to raise `DataSourceChanged`.
+    // - Keep existing functionality (symbols, timeframes, refresh, indicators) unchanged.
+
     public class ChartTopToolbar : ToolStrip
     {
-        private readonly ToolStripComboBox _cbDataSource;
+        private readonly ToolStripDropDownButton _ddDataSource;
         private readonly ToolStripComboBox _cbSymbol;
         private readonly ToolStripLabel _lblSymbol;
         private readonly ToolStripLabel _lblTimeframe;
@@ -20,6 +28,7 @@ namespace ChartPro.Toolbars
         public event Action<string>? SymbolChanged;
         public event Action? RefreshRequested;
         public event Action<string, bool>? IndicatorToggled; // name, isVisible
+        public event Action<CandleSource, string>? DataSourceChanged; // new: data source selected
 
         public ChartTopToolbar()
         {
@@ -28,19 +37,20 @@ namespace ChartPro.Toolbars
             RenderMode = ToolStripRenderMode.System;
             ImageScalingSize = new Size(16,16);
 
-            // DataSource combo
-            _cbDataSource = new ToolStripComboBox
+            // Dropdown chọn Data Source
+            _ddDataSource = new ToolStripDropDownButton("Data Source")
             {
-                Name = "cbDataSource",
-                DropDownStyle = ComboBoxStyle.DropDownList,
-                AutoSize = false,
-                Width = 120
+                Tag = "DataSource",
+                AutoToolTip = false,
+                DisplayStyle = ToolStripItemDisplayStyle.Text
             };
-            _cbDataSource.Items.Add("TextFile");
-            _cbDataSource.Items.Add("Demo");
-            _cbDataSource.SelectedIndex = 0;
-            Items.Add(new ToolStripLabel("DataSource:"));
-            Items.Add(_cbDataSource);
+            AddDataSourceItem("None", CandleSource.None);
+            AddDataSourceItem($"{CandleSource.TextFile}", CandleSource.TextFile);
+            AddDataSourceItem($"{CandleSource.ExcelFile}", CandleSource.ExcelFile);
+            AddDataSourceItem($"{CandleSource.SignalR}", CandleSource.SignalR);
+            AddDataSourceItem($"{CandleSource.Websocket}", CandleSource.Websocket);
+            AddDataSourceItem($"{CandleSource.RestApi}", CandleSource.RestApi);
+            Items.Add(_ddDataSource);
             Items.Add(new ToolStripSeparator());
 
             // Symbol combo
@@ -97,7 +107,18 @@ namespace ChartPro.Toolbars
             AddIndicatorToggle("MACD");
             AddIndicatorToggle("CCI");
             AddIndicatorToggle("StochRSI");
-            Items.Add(_ddIndicators);            
+            Items.Add(_ddIndicators);
+        }
+
+        private void AddDataSourceItem(string text, CandleSource source)
+        {
+            var mi = new ToolStripMenuItem(text);
+            mi.Click += (s, e) =>
+            {
+                // Optionally update button text to reflect selection (kept static per request)
+                DataSourceChanged?.Invoke(source, text);
+            };
+            _ddDataSource.DropDownItems.Add(mi);
         }
 
         private void AddIndicatorToggle(string name)
@@ -148,4 +169,8 @@ namespace ChartPro.Toolbars
             TimeframeSelected?.Invoke(tf);
         }
     }
+
+    // Note: Assumes `CandleSource` is defined elsewhere in the project.
+    // If not, define it in a shared location:
+    // public enum CandleSource { None, TextFile, ExcelFile, SignalR, Websocket, RestApi }
 }

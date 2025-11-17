@@ -13,6 +13,7 @@
     <!-- VS2015 theme -->
 
     <!-- ScottPlot 5 WinForms -->
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageReference Include="ScottPlot.WinForms" Version="5.1.57" />
 
     <!-- Serilog -->
@@ -25,6 +26,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="Cuckoo.Shared">
+      <HintPath>..\..\..\Trading\Cuckoo\Cuckoo.Shared\bin\Debug\net9.0\Cuckoo.Shared.dll</HintPath>
+    </Reference>
     <Reference Include="FluentListView">
       <HintPath>..\..\..\Library\FluentListView\FluentListView\bin\Debug\net9.0-windows\FluentListView.dll</HintPath>
     </Reference>

@@ -7,7 +7,6 @@ namespace ChartPro.Services
     {
         private readonly IChartService _chartService;
 
-        public SubPlotService() : this(new ChartService()) { }
         public SubPlotService(IChartService chartService)
         {
             _chartService = chartService;

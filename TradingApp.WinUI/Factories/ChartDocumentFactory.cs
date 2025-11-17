@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 using ChartPro.Services;
 using TradingApp.WinUI.Docking;
+using ChartPro;
 
 namespace TradingApp.WinUI.Factories
 {
@@ -19,5 +20,12 @@ namespace TradingApp.WinUI.Factories
 
         public ChartDocument Create(string symbol, string timeframe)
             => new ChartDocument(symbol, timeframe, _dataService, _logger, _chartService);
+
+        // helper to create a factory wired to the QuoteService-based data service
+        public static IChartDocumentFactory WithQuoteService(IQuoteService quoteService, ILogger<ChartDocument> logger, IChartService chartService)
+        {
+            var dataSvc = new QuoteChartDataService(quoteService);
+            return new ChartDocumentFactory(dataSvc, logger, chartService);
+        }
     }
 }

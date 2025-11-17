@@ -1,3 +1,4 @@
+using Cuckoo.Shared;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -7,11 +8,11 @@ namespace ChartPro.Services
 {
     public sealed class DemoChartDataService : IChartDataService
     {
-        public Task<IReadOnlyList<Candle>> GetCandlesAsync(string symbol, string timeframe, int count, CancellationToken ct)
+        public Task<List<AppQuote>> GetCandlesAsync(string symbol, string timeframe, int count, CancellationToken ct)
         {
             var rnd = new Random(symbol.GetHashCode() ^ timeframe.GetHashCode());
             double price = 100;
-            var list = new List<Candle>(count);
+            var list = new List<AppQuote>(count);
             var start = DateTime.UtcNow.AddMinutes(-count);
 
             for (int i = 0; i < count; i++)
@@ -26,18 +27,18 @@ namespace ChartPro.Services
                 var high = Math.Max(open, close) + rnd.NextDouble() * 0.4;
                 var low = Math.Min(open, close) - rnd.NextDouble() * 0.4;
 
-                list.Add(new Candle
+                list.Add(new AppQuote
                 {
-                    Time = t,
-                    Open = open,
-                    High = high,
-                    Low = low,
-                    Close = close,
+                    Date = t,
+                    Open = (decimal)open,
+                    High = (decimal)high,
+                    Low = (decimal)low,
+                    Close = (decimal)close,
                     Volume = rnd.Next(100, 5000)
                 });
             }
 
-            return Task.FromResult<IReadOnlyList<Candle>>(list);
+            return Task.FromResult<List<AppQuote>>(list);
         }
     }
 }

@@ -1,17 +1,23 @@
+﻿using Cuckoo.Shared;
 using ScottPlot;
 using ScottPlot.Plottables;
+using ScottPlot.WinForms;
 
 namespace ChartPro.Services
 {
     public interface IChartService
     {
-        // Layout m?c ??nh cho chart gi�
+        // Layout mặc định cho chart giá
         void ApplyDefaultLayout(Plot plt);
 
-        // G�n tr?c ph?i cho plottable
+        // Gán trục phải cho plottable
         void AssignPriceAxisRight(IPlottable plottable, Plot plt);
 
-        // Padding m?c ??nh d�ng chung ?? c�c subplot c?n ??u v?i chart gi�
+        // Padding mặc định dùng chung để các subplot căn đều với chart giá
         PixelPadding GetDefaultPadding();
+
+        Task ApplyBackgroundText(FormsPlot fp, string symbol, string timeFrame);      
+        Task<CandlestickPlot?> LoadAndRender(FormsPlot fp, string symbol, string timeFrame, bool hasGap, List<AppQuote>? quotes);
+        Task AutoScaleAndRender(FormsPlot fp);
     }
 }
