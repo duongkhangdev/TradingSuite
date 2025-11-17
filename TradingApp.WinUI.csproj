@@ -1,0 +1,56 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net9.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- DockPanelSuite core -->
+    <!-- VS2015 theme -->
+
+    <!-- ScottPlot 5 WinForms -->
+    <PackageReference Include="ScottPlot.WinForms" Version="5.1.57" />
+
+    <!-- Serilog -->
+    <PackageReference Include="Serilog" Version="4.3.0" />
+    <PackageReference Include="Serilog.Sinks.Debug" Version="3.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="FluentListView">
+      <HintPath>..\..\Library\FluentListView\FluentListView\bin\Debug\net9.0-windows\FluentListView.dll</HintPath>
+    </Reference>
+    <Reference Include="WeifenLuo.WinFormsUI.Docking">
+      <HintPath>..\..\Library\dockpanelsuite\WinFormsUI\bin\Debug\net9.0-windows\WeifenLuo.WinFormsUI.Docking.dll</HintPath>
+    </Reference>
+    <Reference Include="WeifenLuo.WinFormsUI.Docking.ThemeVS2003">
+      <HintPath>..\..\Library\dockpanelsuite\WinFormsUI\bin\Debug\net9.0-windows\WeifenLuo.WinFormsUI.Docking.ThemeVS2003.dll</HintPath>
+    </Reference>
+    <Reference Include="WeifenLuo.WinFormsUI.Docking.ThemeVS2005">
+      <HintPath>..\..\Library\dockpanelsuite\WinFormsUI\bin\Debug\net9.0-windows\WeifenLuo.WinFormsUI.Docking.ThemeVS2005.dll</HintPath>
+    </Reference>
+    <Reference Include="WeifenLuo.WinFormsUI.Docking.ThemeVS2005Multithreading">
+      <HintPath>..\..\Library\dockpanelsuite\WinFormsUI\bin\Debug\net9.0-windows\WeifenLuo.WinFormsUI.Docking.ThemeVS2005Multithreading.dll</HintPath>
+    </Reference>
+    <Reference Include="WeifenLuo.WinFormsUI.Docking.ThemeVS2012">
+      <HintPath>..\..\Library\dockpanelsuite\WinFormsUI\bin\Debug\net9.0-windows\WeifenLuo.WinFormsUI.Docking.ThemeVS2012.dll</HintPath>
+    </Reference>
+    <Reference Include="WeifenLuo.WinFormsUI.Docking.ThemeVS2013">
+      <HintPath>..\..\Library\dockpanelsuite\WinFormsUI\bin\Debug\net9.0-windows\WeifenLuo.WinFormsUI.Docking.ThemeVS2013.dll</HintPath>
+    </Reference>
+    <Reference Include="WeifenLuo.WinFormsUI.Docking.ThemeVS2015">
+      <HintPath>..\..\Library\dockpanelsuite\WinFormsUI\bin\Debug\net9.0-windows\WeifenLuo.WinFormsUI.Docking.ThemeVS2015.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <!-- NOTE: Add your FluentListView reference here (project or DLL).
+  <ItemGroup>
+    <ProjectReference Include="..\FluentListView\FluentListView.csproj" />
+  </ItemGroup>
+  -->
+
+</Project>
