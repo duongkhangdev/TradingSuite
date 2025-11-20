@@ -1,8 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-using System.Windows.Forms;
 using System.Threading.Tasks; // for Task in symbol async handler
+using System.Windows.Forms;
 using ChartPro; // SymbolComboBoxHelper namespace
 
 namespace ChartPro.Toolbars
@@ -22,6 +23,8 @@ namespace ChartPro.Toolbars
         public event Action? RefreshRequested;
         public event Action<string, bool>? IndicatorToggled; // name, isVisible
         public event Action<CandleSource, string>? DataSourceChanged; // data source selected
+
+        public sealed record IndicatorToggleDefinition(string Name, bool IsChecked);
 
         public ChartTopToolbar()
         {
@@ -92,11 +95,14 @@ namespace ChartPro.Toolbars
                 AutoToolTip = false,
                 DisplayStyle = ToolStripItemDisplayStyle.Text
             };
-            AddIndicatorToggle("RSI");
-            AddIndicatorToggle("MACD");
-            AddIndicatorToggle("CCI");
-            AddIndicatorToggle("StochRSI");
             Items.Add(_ddIndicators);
+            ConfigureIndicatorToggles(new[]
+            {
+                new IndicatorToggleDefinition("RSI", true),
+                new IndicatorToggleDefinition("MACD", false),
+                new IndicatorToggleDefinition("CCI", false),
+                new IndicatorToggleDefinition("StochRSI", false)
+            });
         }
 
         private void AddDataSourceItem(string text, CandleSource source)
@@ -109,15 +115,25 @@ namespace ChartPro.Toolbars
             _ddDataSource.DropDownItems.Add(mi);
         }
 
-        private void AddIndicatorToggle(string name)
+        private void AddIndicatorToggle(string name, bool isChecked = false)
         {
             var mi = new ToolStripMenuItem(name)
             {
-                Checked = name == "RSI", // default example only RSI enabled
+                Checked = isChecked,
                 CheckOnClick = true
             };
             mi.CheckedChanged += (s, e) => IndicatorToggled?.Invoke(name, mi.Checked);
             _ddIndicators.DropDownItems.Add(mi);
+        }
+
+        public void ConfigureIndicatorToggles(IEnumerable<IndicatorToggleDefinition> definitions)
+        {
+            _ddIndicators.DropDownItems.Clear();
+            if (definitions == null)
+                return;
+
+            foreach (var def in definitions)
+                AddIndicatorToggle(def.Name, def.IsChecked);
         }
 
         public void Initialize(string symbol, string timeframe, string[]? symbols = null)

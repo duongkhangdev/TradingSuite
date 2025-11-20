@@ -118,9 +118,7 @@ namespace TradingApp.WinUI
 
         private async void MainForm_Load(object? sender, EventArgs e)
         {
-            // load from file and push into quote service (can be extended for multiple symbols/timeframes)
-            var quotes = await ReadQuotesFromFile();
-
+            await LoadInitialQuotesAsync();
 
             if (File.Exists(LayoutFilePath))
             {
@@ -372,19 +370,42 @@ namespace TradingApp.WinUI
 
         }
 
-        private async Task<List<AppQuote>?> ReadQuotesFromFile()
+        private async Task LoadInitialQuotesAsync()
         {
-            string _symbol = "XAUUSD";
-            string _timeframe = "M15";
-            var quotes = await AppHelper.ReadFile(_symbol, _timeframe);
-
-            // push to QuoteService storage
-            if (quotes != null && quotes.Count > 0)
+            var samples = AppHelper.DiscoverSamples();
+            if (samples.Count == 0)
             {
-                _quoteService.AddOrUpdate(_symbol, _timeframe, quotes);
+                await LoadFallbackSampleAsync("XAUUSD", "M15");
+                return;
             }
 
-            return quotes;
+            foreach (var (symbol, timeframe) in samples)
+            {
+                try
+                {
+                    var quotes = await AppHelper.ReadFile(symbol, timeframe);
+                    if (quotes is { Count: > 0 })
+                        _quoteService.AddOrUpdate(symbol, timeframe, quotes);
+                }
+                catch (Exception ex)
+                {
+                    Log.Warning(ex, "Failed to load sample quotes for {Symbol} {Timeframe}", symbol, timeframe);
+                }
+            }
+        }
+
+        private async Task LoadFallbackSampleAsync(string symbol, string timeframe)
+        {
+            try
+            {
+                var quotes = await AppHelper.ReadFile(symbol, timeframe);
+                if (quotes is { Count: > 0 })
+                    _quoteService.AddOrUpdate(symbol, timeframe, quotes);
+            }
+            catch (Exception ex)
+            {
+                Log.Warning(ex, "Failed to load fallback sample {Symbol} {Timeframe}", symbol, timeframe);
+            }
         }
 
         #region Demo data

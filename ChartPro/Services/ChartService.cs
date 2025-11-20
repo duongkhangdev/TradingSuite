@@ -1,4 +1,5 @@
-﻿using Cuckoo.Shared;
+﻿using ChartPro;
+using Cuckoo.Shared;
 using ScottPlot;
 using ScottPlot.Plottables;
 using ScottPlot.WinForms;
@@ -115,6 +116,10 @@ namespace ChartPro.Services
 
             // 
             plot.Axes.Bottom.MinimumSize = 60;
+
+            // Đồng nhất bề rộng trục giá với các subplot (giữ nguyên width hiện có nếu đã cấu hình)
+            var currentWidth = ScottHelper.GetRightAxisWidth(fp);
+            ScottHelper.FixRightAxisWidth(fp, currentWidth);
 
             // force a redraw
             await AutoScaleAndRender(fp);

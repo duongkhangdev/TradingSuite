@@ -148,6 +148,9 @@ namespace ChartPro
             var h70 = plt.Add.HorizontalLine(70); h70.Color = ScottPlot.Colors.SeaGreen; h70.Axes.YAxis = plt.Axes.Right; h70.Axes.XAxis = plt.Axes.Bottom;
             var h30 = plt.Add.HorizontalLine(30); h30.Color = ScottPlot.Colors.OrangeRed; h30.Axes.YAxis = plt.Axes.Right; h30.Axes.XAxis = plt.Axes.Bottom;
 
+            // Giữ bề rộng trục phải đồng nhất với chart chính
+            ScottHelper.ApplyRightAxisWidth(candlePlot, formsPlot);
+
             // Phân đoạn theo vùng OB/OS để đổi màu
             var segments = new List<RsiSegment>();
             RsiSegment? currentSeg = null;

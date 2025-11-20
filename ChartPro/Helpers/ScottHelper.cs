@@ -15,16 +15,71 @@ namespace ChartPro
 {
     public class ScottHelper
     {
+        private const int DefaultRightAxisWidthPx = 68;
+        private static int _cachedRightAxisWidthPx = DefaultRightAxisWidthPx;
+
         public static T? AsPlottable<T>(IPlottable p) where T : class, IPlottable
             => p as T;
 
-        public static void FixRightAxisWidth(FormsPlot fp, int px = 68)
+        public static int GetCachedRightAxisWidth() => _cachedRightAxisWidthPx;
+
+        public static int GetRightAxisWidth(FormsPlot? fp)
         {
+            if (fp is null)
+                return _cachedRightAxisWidthPx;
+
+            var axis = fp.Plot.Axes.Right;
+            var width = ComputeAxisWidth(axis.MinimumSize, axis.MaximumSize);
+            return UpdateCachedWidth(width);
+        }
+
+        public static int GetRightAxisWidth(CandlestickPlot? candlePlot)
+        {
+            if (candlePlot is null)
+                return _cachedRightAxisWidthPx;
+
+            var axis = candlePlot.Axes.YAxis;
+            var width = ComputeAxisWidth(axis.MinimumSize, axis.MaximumSize);
+            return UpdateCachedWidth(width);
+        }
+
+        public static void FixRightAxisWidth(FormsPlot fp, int px = DefaultRightAxisWidthPx)
+        {
+            if (fp is null)
+                return;
+
+            px = NormalizeWidth(px);
+
             // Khoá cứng bề rộng panel trục phải để đồng nhất pixel
             var right = fp.Plot.Axes.Right;
             right.MinimumSize = px;
             right.MaximumSize = px;
+
+            UpdateCachedWidth(px);
         }
+
+        public static void MatchRightAxisWidth(FormsPlot? source, FormsPlot? target)
+        {
+            if (target is null)
+                return;
+
+            int px = source is null ? _cachedRightAxisWidthPx : GetRightAxisWidth(source);
+            FixRightAxisWidth(target, px);
+        }
+
+        public static void ApplyRightAxisWidth(CandlestickPlot? candlePlot, FormsPlot? target)
+        {
+            if (target is null)
+                return;
+
+            int px = candlePlot is null
+                ? _cachedRightAxisWidthPx
+                : GetRightAxisWidth(candlePlot);
+
+            FixRightAxisWidth(target, px);
+        }
+
+        public static void CacheRightAxisWidth(int px) => UpdateCachedWidth(px);
 
         public static Coordinates GetMouseCoordinates(FormsPlot formsPlot, CandlestickPlot candlestickPlot)
         {
@@ -489,6 +544,28 @@ namespace ChartPro
             //vline.LineStyle = ScottPlot.LineStyle;
             vline.Color = ScottPlot.Colors.ForestGreen;
             formsPlot.Refresh();
+        }
+
+        private static int NormalizeWidth(int px) => px <= 0 ? DefaultRightAxisWidthPx : px;
+
+        private static int UpdateCachedWidth(int px)
+        {
+            if (px <= 0)
+                return _cachedRightAxisWidthPx;
+
+            _cachedRightAxisWidthPx = px;
+            return px;
+        }
+
+        private static int ComputeAxisWidth(double minSize, double maxSize)
+        {
+            if (double.IsFinite(minSize) && minSize > 0)
+                return (int)Math.Round(minSize);
+
+            if (double.IsFinite(maxSize) && maxSize > 0)
+                return (int)Math.Round(maxSize);
+
+            return _cachedRightAxisWidthPx;
         }
     }
 }

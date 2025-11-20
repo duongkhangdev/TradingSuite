@@ -1,4 +1,6 @@
 using ChartPro;
+using ChartPro.Charting.Interactions;
+using ChartPro.Charting.ShapeManagement;
 using ChartPro.Services;
 using Cuckoo.WinLifetime;
 using Microsoft.Extensions.DependencyInjection;
@@ -58,6 +60,8 @@ namespace TradingApp.WinUI
                 builder.Services.AddTransient<IChartService, ChartService>();
                 builder.Services.AddTransient<IChartSubplotService, ChartSubplotService>();
                 builder.Services.AddSingleton<IChartTechnicalService, ChartTechnicalService>();
+                builder.Services.AddTransient<IShapeManager, ShapeManager>();
+                builder.Services.AddTransient<IChartInteractions, ChartInteractions>();
 
 
                 builder.Services.AddSingleton<IRealtimeConnectionService, RealtimeConnectionService>();
