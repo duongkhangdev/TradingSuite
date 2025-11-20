@@ -1,8 +1,16 @@
+using TradingApp.WebApi.Hubs;
+using TradingApp.WebApi.Services;
+
 var builder = WebApplication.CreateBuilder(args);
+
+var keepAlive = TimeSpan.FromSeconds(120);
 
 // Add services to the container.
 
 builder.Services.AddControllers();
+builder.Services.AddSingleton<IWebSocketConnectionManager, WebSocketConnectionManager>();
+builder.Services.AddSignalR();
+builder.Services.AddSingleton<ITradingBroadcaster, TradingBroadcaster>();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
@@ -15,9 +23,14 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseWebSockets(new WebSocketOptions
+{
+    KeepAliveInterval = keepAlive
+});
 
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHub<TradingHub>("/hubs/trading");
 
 app.Run();

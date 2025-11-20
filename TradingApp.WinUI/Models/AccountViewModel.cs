@@ -12,6 +12,7 @@ namespace TradingApp.WinUI.Models
         public double Balance { get; set; }
         public double Equity { get; set; }
         public double FreeMargin { get; set; }
+        public double MarginUsed { get; set; }
         public double MarginLevel { get; set; }
         public bool IsCurrent { get; set; }
 

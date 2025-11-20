@@ -66,6 +66,7 @@ namespace TradingApp.WinUI.Docking
             {
                 nameof(OrderViewModel.Side),
                 nameof(OrderViewModel.Type),
+                nameof(OrderViewModel.Status),
                 nameof(OrderViewModel.Lots),
                 nameof(OrderViewModel.Price),
                 nameof(OrderViewModel.SL),
@@ -76,7 +77,7 @@ namespace TradingApp.WinUI.Docking
 
             View.Properties.ColumnNames = new List<string>
             {
-                "Side", "Type", "Lots", "Price",
+                "Side", "Type", "Status", "Lots", "Price",
                 "SL", "TP", "Created", "Expire"
             };
         }

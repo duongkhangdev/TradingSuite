@@ -107,9 +107,6 @@ namespace TradingApp.WinUI.Docking
 
         private CandlestickPlot? candlestickPlot = null;
 
-        // Cache times extracted from QuoteService for subplot rendering (X values aligned with price)
-        private double[] _times = Array.Empty<double>();
-
         private void ApplyRightAxisWidthToAll()
         {
             try
@@ -243,9 +240,6 @@ namespace TradingApp.WinUI.Docking
                     ApplyRightAxisWidthToAll();
                     return;
                 }
-
-                // Build time axis (use DateTime->OADate so subplots align with price axis)
-                _times = candles.Select(c => c.Date.ToOADate()).ToArray();
 
                 // Keep reference of latest quotes for centralized renderer
                 AppQuotes = candles;

@@ -15,6 +15,7 @@
     <!-- ScottPlot 5 WinForms -->
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageReference Include="ScottPlot.WinForms" Version="5.1.57" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="9.0.0" />
 
     <!-- Serilog -->
     <PackageReference Include="Serilog" Version="4.3.0" />

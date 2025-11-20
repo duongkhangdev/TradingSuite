@@ -8,6 +8,7 @@ using System;
 using System.Windows.Forms;
 using TradingApp.WinUI.Docking;
 using TradingApp.WinUI.Logging;
+using TradingApp.WinUI.Services;
 
 namespace TradingApp.WinUI
 {
@@ -58,8 +59,11 @@ namespace TradingApp.WinUI
                 builder.Services.AddSingleton<IChartTechnicalService, ChartTechnicalService>();
 
 
+                builder.Services.AddSingleton<IRealtimeConnectionService, RealtimeConnectionService>();
+
                 builder.Services.AddTransient<AccountsDock>();
                 builder.Services.AddTransient<ChartDocument>();
+                builder.Services.AddTransient<ConnectionsDock>();
                 builder.Services.AddTransient<HistoryDock>();
                 builder.Services.AddTransient<LogDock>();
                 builder.Services.AddTransient<OrdersDock>();
