@@ -24,6 +24,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ChartPro\ChartPro.csproj" />
+    <ProjectReference Include="..\TradingSuite.Charting\TradingSuite.Charting.csproj" />
   </ItemGroup>
 
   <ItemGroup>

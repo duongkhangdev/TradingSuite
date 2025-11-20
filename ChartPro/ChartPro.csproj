@@ -18,6 +18,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\TradingSuite.Charting\TradingSuite.Charting.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="Cuckoo.Shared">
       <HintPath>..\..\..\Trading\Cuckoo\Cuckoo.Shared\bin\Debug\net9.0\Cuckoo.Shared.dll</HintPath>
     </Reference>

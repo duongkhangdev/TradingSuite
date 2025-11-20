@@ -1,5 +1,6 @@
 using TradingApp.WebApi.Hubs;
 using TradingApp.WebApi.Services;
+using TradingSuite.Charting.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,6 +9,8 @@ var keepAlive = TimeSpan.FromSeconds(120);
 // Add services to the container.
 
 builder.Services.AddControllers();
+builder.Services.AddSingleton<IQuoteService, QuoteService>();
+builder.Services.AddSingleton<IChartTechnicalService, ChartTechnicalService>();
 builder.Services.AddSingleton<IWebSocketConnectionManager, WebSocketConnectionManager>();
 builder.Services.AddSignalR();
 builder.Services.AddSingleton<ITradingBroadcaster, TradingBroadcaster>();

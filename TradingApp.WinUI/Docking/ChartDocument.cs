@@ -15,6 +15,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using WeifenLuo.WinFormsUI.Docking;
+using TradingSuite.Charting.Services;
 
 namespace TradingApp.WinUI.Docking
 {

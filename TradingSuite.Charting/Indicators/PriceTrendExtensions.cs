@@ -1,4 +1,4 @@
-﻿using Cuckoo.Shared;
+using Cuckoo.Shared;
 using Skender.Stock.Indicators;
 using System;
 using System.Collections.Generic;
@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ChartPro
+namespace TradingSuite.Charting.Indicators
 {
     public static partial class IndicatorExtensions
     {

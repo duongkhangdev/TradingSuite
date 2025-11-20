@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.0" />
+    <PackageReference Include="ScottPlot" Version="5.1.57" />
+    <PackageReference Include="Skender.Stock.Indicators" Version="2.7.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Cuckoo.Shared">
+      <HintPath>..\..\..\Trading\Cuckoo\Cuckoo.Shared\bin\Debug\net9.0\Cuckoo.Shared.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>

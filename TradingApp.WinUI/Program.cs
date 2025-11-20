@@ -9,6 +9,7 @@ using System.Windows.Forms;
 using TradingApp.WinUI.Docking;
 using TradingApp.WinUI.Logging;
 using TradingApp.WinUI.Services;
+using TradingSuite.Charting.Services;
 
 namespace TradingApp.WinUI
 {

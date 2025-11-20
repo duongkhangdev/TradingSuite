@@ -2,7 +2,8 @@
 using ScottPlot;
 using ScottPlot.Plottables;
 using ScottPlot.WinForms;
-using System.Threading.Tasks;
+using TradingSuite.Charting.Extensions;
+using TradingSuite.Charting.Services;
 
 namespace ChartPro.Services
 {
@@ -72,7 +73,7 @@ namespace ChartPro.Services
             var plot = fp.Plot;
 
             var interval = BrokerHelper.GetInterval(timeFrame);
-            List<OHLC> OHLCs = quotes.ToOHLCs(interval);
+            List<OHLC> OHLCs = quotes.ToOhlcs(interval);
 
             // 1. đặt lại text nền
             await ApplyBackgroundText(fp, symbol, timeFrame);

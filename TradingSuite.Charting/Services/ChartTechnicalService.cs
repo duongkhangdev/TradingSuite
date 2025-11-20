@@ -1,17 +1,18 @@
-﻿using Cuckoo.Shared;
+using Cuckoo.Shared;
 using Microsoft.Extensions.Logging;
 using ScottPlot;
-using Serilog;
 using Skender.Stock.Indicators;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
+using TradingSuite.Charting.Extensions;
+using TradingSuite.Charting.Indicators;
+using TradingSuite.Charting.Extensions;
 
-namespace ChartPro
+namespace TradingSuite.Charting.Services
 {
     public interface IChartTechnicalService
     {
@@ -29,7 +30,6 @@ namespace ChartPro
 
     public class ChartTechnicalService : IChartTechnicalService
     {
-        // XAUUSD --> M15 --> RSI --> Data Model
         private static readonly ConcurrentDictionary<string,
                                     ConcurrentDictionary<string,
                                         ConcurrentDictionary<string, object>>> _data = new();
@@ -49,28 +49,27 @@ namespace ChartPro
             {
                 if (_data.TryAdd(symbol, new ConcurrentDictionary<string, ConcurrentDictionary<string, object>>()))
                 {
-                    _logger.LogInformation($"MT5TechnicalAnalysisService_AddOrUpdate: 1. Added new symbol '{symbol}'.");
+                    _logger.LogInformation("Added new symbol {Symbol}.", symbol);
                 }
             }
             if (!_data[symbol].ContainsKey(time_frame))
             {
                 if (_data[symbol].TryAdd(time_frame, new ConcurrentDictionary<string, object>()))
                 {
-                    _logger.LogInformation($"MT5TechnicalAnalysisService_AddOrUpdate: 2. Added new time frame '{time_frame}' for symbol '{symbol}'.");
+                    _logger.LogInformation("Added new time frame {TimeFrame} for symbol {Symbol}.", time_frame, symbol);
                 }
             }
             if (!_data[symbol][time_frame].ContainsKey(unique_key))
             {
                 if (_data[symbol][time_frame].TryAdd(unique_key, model))
                 {
-                    _logger.LogInformation($"MT5TechnicalAnalysisService_AddOrUpdate: 3. Added new key '{unique_key}' for symbol '{symbol}' time frame '{time_frame}'.");
+                    _logger.LogInformation("Added new key {Key} for {Symbol}/{TimeFrame}.", unique_key, symbol, time_frame);
                 }
                 return;
             }
-            // update
             if (_data[symbol][time_frame].TryUpdate(unique_key, model, _data[symbol][time_frame][unique_key]))
             {
-                _logger.LogInformation($"MT5TechnicalAnalysisService_AddOrUpdate: 4. Updated symbol '{symbol}' with time frame '{time_frame}', key '{unique_key}'.");
+                _logger.LogInformation("Updated {Symbol}/{TimeFrame} key {Key}.", symbol, time_frame, unique_key);
             }
         }
 
@@ -123,25 +122,22 @@ namespace ChartPro
         public async Task IndicatorsCompute(string symbol, string time_frame, List<AppQuote> quotes)
         {
             var sw = Stopwatch.StartNew();
-            // Task chạy ngầm
             await Task.Run(() =>
             {
                 try
                 {
-                    List<OHLC> ohlcs = quotes!.ToOHLCs(BrokerHelper.GetInterval(time_frame!));
+                    List<OHLC> ohlcs = quotes.ToOhlcs(BrokerHelper.GetInterval(time_frame));
                     if (ohlcs != null && ohlcs.Any())
                     {
                         AddOrUpdate(symbol, time_frame, "OHLCS", ohlcs);
                     }
 
-                    // precompute arrays for plotting
                     var times = quotes.Select(q => q.Date.ToOADate()).ToArray();
                     AddOrUpdate(symbol, time_frame, "Times", times);
 
                     var closes = quotes.Select(q => Convert.ToDouble(q.Close)).ToArray();
                     AddOrUpdate(symbol, time_frame, "Closes", closes);
 
-                    // lightweight arrays for common indicators
                     var rsiArr = ComputeRsi(closes, 14);
                     AddOrUpdate(symbol, time_frame, "RsiArr", rsiArr);
 
@@ -154,218 +150,217 @@ namespace ChartPro
                     var stochRsiArr = ComputeStochRsi(closes, 14);
                     AddOrUpdate(symbol, time_frame, "StochRsiArr", stochRsiArr);
 
-                    // keep existing rich indicator sets using Skender extensions
-                    var bb12 = quotes?.GetBollingerBandsResults(20, 1.2);
+                    var bb12 = quotes.GetBollingerBandsResults(20, 1.2);
                     if (bb12 != null && bb12.Any())
                     {
                         AddOrUpdate(symbol, time_frame, "BB12", bb12);
                     }
 
-                    var bb17 = quotes?.GetBollingerBandsResults(20, 1.7);
+                    var bb17 = quotes.GetBollingerBandsResults(20, 1.7);
                     if (bb17 != null && bb17.Any())
                     {
                         AddOrUpdate(symbol, time_frame, "BB17", bb17);
                     }
 
-                    var bb25 = quotes?.GetBollingerBandsResults(20, 2.5);
+                    var bb25 = quotes.GetBollingerBandsResults(20, 2.5);
                     if (bb25 != null && bb25.Any())
                     {
                         AddOrUpdate(symbol, time_frame, "BB25", bb25);
                     }
 
-                    var bb35 = quotes?.GetBollingerBandsResults(20, 3.5);
+                    var bb35 = quotes.GetBollingerBandsResults(20, 3.5);
                     if (bb35 != null && bb35.Any())
                     {
                         AddOrUpdate(symbol, time_frame, "BB35", bb35);
                     }
 
-                    var bb45 = quotes?.GetBollingerBandsResults(20, 4.5);
+                    var bb45 = quotes.GetBollingerBandsResults(20, 4.5);
                     if (bb45 != null && bb45.Any())
                     {
                         AddOrUpdate(symbol, time_frame, "BB45", bb45);
                     }
 
-                    var atrStop = quotes?.GetAtrStopResults();
+                    var atrStop = quotes.GetAtrStopResults();
                     if (atrStop != null && atrStop.Any())
                     {
                         AddOrUpdate(symbol, time_frame, "AtrStop", atrStop);
                     }
 
-                    var superTrend = quotes?.GetSuperTrendResults(10, 3.0);
+                    var superTrend = quotes.GetSuperTrendResults(10, 3.0);
                     if (superTrend != null && superTrend.Any())
                     {
                         AddOrUpdate(symbol, time_frame, "SuperTrend", superTrend);
                     }
 
-                    var ichimoku = quotes?.GetIchimokuResults();
+                    var ichimoku = quotes.GetIchimokuResults();
                     if (ichimoku != null && ichimoku.Any())
                     {
                         AddOrUpdate(symbol, time_frame, "Ichimoku", ichimoku);
                     }
 
-                    var alligator = quotes?.GetAlligatorResults();
+                    var alligator = quotes.GetAlligatorResults();
                     if (alligator != null && alligator.Any())
                     {
                         AddOrUpdate(symbol, time_frame, "Alligator", alligator);
                     }
 
-                    var sar = quotes?.GetParabolicSarResults(0.02, 0.2);
+                    var sar = quotes.GetParabolicSarResults(0.02, 0.2);
                     if (sar != null && sar.Any())
                     {
                         AddOrUpdate(symbol, time_frame, "Sar", sar);
                     }
 
-                    var adx = quotes?.GetAdxResults();
+                    var adx = quotes.GetAdxResults();
                     if (adx != null && adx.Any())
                     {
                         AddOrUpdate(symbol, time_frame, "Adx", adx);
                     }
 
-                    var macd = quotes?.GetMacdResults();
+                    var macd = quotes.GetMacdResults();
                     if (macd != null && macd.Any())
                     {
                         AddOrUpdate(symbol, time_frame, "Macd", macd);
                     }
 
-                    var stochRsi = quotes?.GetStochRsiResults(14, 14, 3, 3);
+                    var stochRsi = quotes.GetStochRsiResults(14, 14, 3, 3);
                     if (stochRsi != null && stochRsi.Any())
                     {
                         AddOrUpdate(symbol, time_frame, "StochRsi", stochRsi);
                     }
 
-                    var atr = quotes?.GetAtrResults();
+                    var atr = quotes.GetAtrResults();
                     if (atr != null && atr.Any())
                     {
                         AddOrUpdate(symbol, time_frame, "Atr", atr);
                     }
 
-                    var rsi = quotes?.GetRsiResults();
+                    var rsi = quotes.GetRsiResults();
                     if (rsi != null && rsi.Any())
                     {
                         AddOrUpdate(symbol, time_frame, "Rsi", rsi);
                     }
 
-                    var cci = quotes?.GetCciResults();
+                    var cci = quotes.GetCciResults();
                     if (cci != null && cci.Any())
                     {
                         AddOrUpdate(symbol, time_frame, "Cci", cci);
                     }
 
-                    var ema5 = quotes?.GetEmaResults(5);
+                    var ema5 = quotes.GetEmaResults(5);
                     if (ema5 != null && ema5.Any())
                     {
                         AddOrUpdate(symbol, time_frame, "Ema5", ema5);
                     }
 
-                    var ema9 = quotes?.GetEmaResults(9);
+                    var ema9 = quotes.GetEmaResults(9);
                     if (ema9 != null && ema9.Any())
                     {
                         AddOrUpdate(symbol, time_frame, "Ema9", ema9);
                     }
 
-                    var ema21 = quotes?.GetEmaResults(21);
+                    var ema21 = quotes.GetEmaResults(21);
                     if (ema21 != null && ema21.Any())
                     {
                         AddOrUpdate(symbol, time_frame, "Ema21", ema21);
                     }
 
-                    var ema34 = quotes?.GetEmaResults(34);
+                    var ema34 = quotes.GetEmaResults(34);
                     if (ema34 != null && ema34.Any())
                     {
                         AddOrUpdate(symbol, time_frame, "Ema34", ema34);
                     }
 
-                    var ema55 = quotes?.GetEmaResults(55);
+                    var ema55 = quotes.GetEmaResults(55);
                     if (ema55 != null && ema55.Any())
                     {
                         AddOrUpdate(symbol, time_frame, "Ema55", ema55);
                     }
 
-                    var ema89 = quotes?.GetEmaResults(89);
+                    var ema89 = quotes.GetEmaResults(89);
                     if (ema89 != null && ema89.Any())
                     {
                         AddOrUpdate(symbol, time_frame, "Ema89", ema89);
                     }
 
-                    var ema144 = quotes?.GetEmaResults(144);
+                    var ema144 = quotes.GetEmaResults(144);
                     if (ema144 != null && ema144.Any())
                     {
                         AddOrUpdate(symbol, time_frame, "Ema144", ema144);
                     }
 
-                    var ema200 = quotes?.GetEmaResults(200);
+                    var ema200 = quotes.GetEmaResults(200);
                     if (ema200 != null && ema200.Any())
                     {
                         AddOrUpdate(symbol, time_frame, "Ema200", ema200);
                     }
 
-                    var sma7 = quotes?.GetSmaResults(7);
+                    var sma7 = quotes.GetSmaResults(7);
                     if (sma7 != null && sma7.Any())
                     {
                         AddOrUpdate(symbol, time_frame, "Sma7", sma7);
                     }
 
-                    var sma25 = quotes?.GetSmaResults(25);
+                    var sma25 = quotes.GetSmaResults(25);
                     if (sma25 != null && sma25.Any())
                     {
                         AddOrUpdate(symbol, time_frame, "Sma25", sma25);
                     }
 
-                    var sma99 = quotes?.GetSmaResults(99);
+                    var sma99 = quotes.GetSmaResults(99);
                     if (sma99 != null && sma99.Any())
                     {
                         AddOrUpdate(symbol, time_frame, "Sma99", sma99);
                     }
 
-                    var sma200 = quotes?.GetSmaResults(200);
+                    var sma200 = quotes.GetSmaResults(200);
                     if (sma200 != null && sma200.Any())
                     {
                         AddOrUpdate(symbol, time_frame, "Sma200", sma200);
                     }
 
-                    var vwma5 = quotes?.GetVwmaResults(5);
+                    var vwma5 = quotes.GetVwmaResults(5);
                     if (vwma5 != null && vwma5.Any())
                     {
                         AddOrUpdate(symbol, time_frame, "Vwma5", vwma5);
                     }
 
-                    var vwma9 = quotes?.GetVwmaResults(9);
+                    var vwma9 = quotes.GetVwmaResults(9);
                     if (vwma9 != null && vwma9.Any())
                     {
                         AddOrUpdate(symbol, time_frame, "Vwma9", vwma9);
                     }
 
-                    var vwma21 = quotes?.GetVwmaResults(21);
+                    var vwma21 = quotes.GetVwmaResults(21);
                     if (vwma21 != null && vwma21.Any())
                     {
                         AddOrUpdate(symbol, time_frame, "Vwma21", vwma21);
                     }
 
-                    var vwma34 = quotes?.GetVwmaResults(34);
+                    var vwma34 = quotes.GetVwmaResults(34);
                     if (vwma34 != null && vwma34.Any())
                     {
                         AddOrUpdate(symbol, time_frame, "Vwma34", vwma34);
                     }
 
-                    var vwma55 = quotes?.GetVwmaResults(55);
+                    var vwma55 = quotes.GetVwmaResults(55);
                     if (vwma55 != null && vwma55.Any())
                     {
                         AddOrUpdate(symbol, time_frame, "Vwma55", vwma55);
                     }
 
-                    var vwma89 = quotes?.GetVwmaResults(89);
+                    var vwma89 = quotes.GetVwmaResults(89);
                     if (vwma89 != null && vwma89.Any())
                     {
                         AddOrUpdate(symbol, time_frame, "Vwma89", vwma89);
                     }
 
-                    var vwma144 = quotes?.GetVwmaResults(144);
+                    var vwma144 = quotes.GetVwmaResults(144);
                     if (vwma144 != null && vwma144.Any())
                     {
                         AddOrUpdate(symbol, time_frame, "Vwma144", vwma144);
                     }
 
-                    var vwma200 = quotes?.GetVwmaResults(200);
+                    var vwma200 = quotes.GetVwmaResults(200);
                     if (vwma200 != null && vwma200.Any())
                     {
                         AddOrUpdate(symbol, time_frame, "Vwma200", vwma200);
@@ -373,12 +368,12 @@ namespace ChartPro
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "IndicatorsCompute failed for {Symbol} {TF}", symbol, time_frame);
+                    _logger.LogError(ex, "IndicatorsCompute failed for {Symbol} {TimeFrame}", symbol, time_frame);
                 }
             });
 
             sw.Stop();
-            Log.Information($"Calculate indicators --> Elapsed: {sw.Elapsed.TotalSeconds} s");
+            _logger.LogInformation("Calculated indicators for {Symbol}/{TimeFrame} in {ElapsedSeconds:F2}s", symbol, time_frame, sw.Elapsed.TotalSeconds);
 
             await Task.CompletedTask;
         }
@@ -473,7 +468,6 @@ namespace ChartPro
             return indicators;
         }
 
-        // Lightweight computations mirroring those used in ChartDocument
         private static double[] ComputeRsi(double[] closes, int period)
         {
             if (closes.Length == 0 || period <= 0) return Array.Empty<double>();

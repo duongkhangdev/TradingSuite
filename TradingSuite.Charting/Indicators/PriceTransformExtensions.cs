@@ -1,4 +1,4 @@
-﻿using Cuckoo.Shared;
+using Cuckoo.Shared;
 using Skender.Stock.Indicators;
 using System;
 using System.Collections.Generic;
@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ChartPro
+namespace TradingSuite.Charting.Indicators
 {
     public static partial class IndicatorExtensions
     {
@@ -119,11 +119,11 @@ namespace ChartPro
 
             var zigZagPointTypes = result.WhereIf(result.IsNotNullAndNotEmpty(), x => x.PointType != null)?.OrderBy(x => x.Date)?.ToList();
 
-            // Đỉnh
+            // �?nh
             var hightPoints = result.WhereIf(result.IsNotNullAndNotEmpty(), x => x.PointType == "H")?.OrderBy(x => x.Date)?.ToList();
-            // Đáy
+            // ��y
             var lowPoints = result.WhereIf(result.IsNotNullAndNotEmpty(), x => x.PointType == "L")?.OrderBy(x => x.Date)?.ToList();
-            // Đỉnh, đáy gần kline đang run
+            // �?nh, d�y g?n kline dang run
             var nearest = (zigZagPointTypes.IsNotNullAndNotEmpty()) ? zigZagPointTypes.LastOrDefault().PointType : "";
 
             var items = new List<ZigZagResult>();

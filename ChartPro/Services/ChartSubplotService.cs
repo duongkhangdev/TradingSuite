@@ -2,8 +2,7 @@ using Cuckoo.Shared;
 using ScottPlot;
 using ScottPlot.Plottables;
 using ScottPlot.WinForms;
-using System;
-using System.Threading.Tasks;
+using TradingSuite.Charting.Services;
 
 namespace ChartPro.Services
 {

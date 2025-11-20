@@ -15,6 +15,7 @@ using TradingApp.WinUI.Docking;
 using TradingApp.WinUI.Models;
 using TradingApp.WinUI.Services;
 using WeifenLuo.WinFormsUI.Docking;
+using TradingSuite.Charting.Services;
 
 namespace TradingApp.WinUI
 {
