@@ -124,16 +124,16 @@ namespace TradingApp.WinUI
             {
                 try
                 {
-                    CreateDefaultLayout();
+                    await CreateDefaultLayout();
                 }
                 catch
                 {
-                    CreateDefaultLayout();
+                    await CreateDefaultLayout();
                 }
             }
             else
             {
-                CreateDefaultLayout();
+                await CreateDefaultLayout();
             }
 
             LoadDemoData();
@@ -149,9 +149,9 @@ namespace TradingApp.WinUI
             UnwireRealtimeEvents();
         }
 
-        private void CreateDefaultLayout()
+        private async Task CreateDefaultLayout()
         {
-            _ = OpenChart("XAUUSD", "M15", true);
+            _ = await OpenChart("XAUUSD", "M15", true);
 
             var realtime = ShowConnections(true);
             realtime?.Show(_dockPanel, DockState.DockLeft);
@@ -340,12 +340,12 @@ namespace TradingApp.WinUI
                 c.Symbol.Equals(symbol, StringComparison.OrdinalIgnoreCase) &&
                 c.Timeframe.Equals(timeframe, StringComparison.OrdinalIgnoreCase));
 
-            if (existing != null)
-            {
-                if (show)
-                    existing.Show(_dockPanel);
-                return existing;
-            }
+            //if (existing != null)
+            //{
+            //    if (show)
+            //        existing.Show(_dockPanel);
+            //    return existing;
+            //}
 
             var form = await _formProvider.GetFormAsync<ChartDocument>();
             form.Symbol = symbol;

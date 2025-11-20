@@ -8,15 +8,15 @@ namespace ChartPro.Toolbars
 {
     public class ChartLeftToolbar : ToolStrip
     {
-        private readonly ToolStripDropDownButton _btnDraw = null!;
         private readonly ToolStripButton _btnUndo = null!;
         private readonly ToolStripButton _btnRedo = null!;
         private readonly ToolStripButton _btnDelete = null!;
         private readonly ToolStripButton _btnClearAll = null!;
         private readonly ToolStripButton _btnSnap = null!;
         private readonly ToolStripDropDownButton _btnSnapMode = null!;
-        private readonly ToolStripDropDownButton _btnAnnotations = null!;
-        private readonly Dictionary<ChartDrawMode, ToolStripMenuItem> _drawItems = new();
+        private readonly ToolStripButton _btnSaveAnnotations = null!;
+        private readonly ToolStripButton _btnLoadAnnotations = null!;
+        private readonly Dictionary<ChartDrawMode, ToolStripButton> _drawButtons = new();
         private readonly Dictionary<SnapMode, ToolStripMenuItem> _snapModeItems = new();
 
         public event Action<ChartDrawMode>? DrawModeSelected;
@@ -35,33 +35,40 @@ namespace ChartPro.Toolbars
             Dock = DockStyle.Left;
             LayoutStyle = ToolStripLayoutStyle.VerticalStackWithOverflow;
             AutoSize = false;
-            Width = 80;
+            Width = 160;
             RenderMode = ToolStripRenderMode.System;
+            Padding = new Padding(6, 8, 6, 8);
+            CanOverflow = false;
+            Stretch = true;
+            GripMargin = new Padding(0);
 
-            _btnDraw = new ToolStripDropDownButton("Draw")
+            Items.Add(CreateSectionLabel("Drawing Tools"));
+            Items.AddRange(new ToolStripItem[]
             {
-                AutoToolTip = false,
-                DisplayStyle = ToolStripItemDisplayStyle.Text,
-            };
+                CreateDrawButton("Select / Move", ChartDrawMode.None),
+                CreateDrawButton("Trend Line", ChartDrawMode.TrendLine),
+                CreateDrawButton("Horizontal", ChartDrawMode.HorizontalLine),
+                CreateDrawButton("Vertical", ChartDrawMode.VerticalLine),
+                CreateDrawButton("Rectangle", ChartDrawMode.Rectangle),
+                CreateDrawButton("Circle", ChartDrawMode.Circle),
+                CreateDrawButton("Fib Retrace", ChartDrawMode.FibonacciRetracement),
+                CreateDrawButton("Fib Extension", ChartDrawMode.FibonacciExtension)
+            });
 
-            AddDrawMenuItem("Select/Move", ChartDrawMode.None);
-            _btnDraw.DropDownItems.Add(new ToolStripSeparator());
-            AddDrawMenuItem("Trend Line", ChartDrawMode.TrendLine);
-            AddDrawMenuItem("Horizontal Line", ChartDrawMode.HorizontalLine);
-            AddDrawMenuItem("Vertical Line", ChartDrawMode.VerticalLine);
-            AddDrawMenuItem("Rectangle", ChartDrawMode.Rectangle);
-            AddDrawMenuItem("Circle", ChartDrawMode.Circle);
-            AddDrawMenuItem("Fib Retracement", ChartDrawMode.FibonacciRetracement);
-            AddDrawMenuItem("Fib Extension", ChartDrawMode.FibonacciExtension);
-
+            Items.Add(new ToolStripSeparator { Margin = new Padding(0, 8, 0, 4) });
+            Items.Add(CreateSectionLabel("Edit"));
             _btnUndo = BuildButton("Undo", (s, e) => UndoRequested?.Invoke());
             _btnRedo = BuildButton("Redo", (s, e) => RedoRequested?.Invoke());
             _btnDelete = BuildButton("Delete", (s, e) => DeleteRequested?.Invoke());
             _btnClearAll = BuildButton("Clear All", (s, e) => ClearRequested?.Invoke());
+            Items.AddRange(new ToolStripItem[] { _btnUndo, _btnRedo, _btnDelete, _btnClearAll });
 
+            Items.Add(new ToolStripSeparator { Margin = new Padding(0, 8, 0, 4) });
+            Items.Add(CreateSectionLabel("Snap"));
             _btnSnap = BuildButton("Snap", (s, e) => SnapToggled?.Invoke(_btnSnap.Checked));
             _btnSnap.CheckOnClick = true;
-
+            Items.Add(_btnSnap);
+            Items.Add(new ToolStripSeparator());
             _btnSnapMode = new ToolStripDropDownButton("Snap Mode")
             {
                 AutoToolTip = false,
@@ -71,42 +78,44 @@ namespace ChartPro.Toolbars
             AddSnapMenuItem("Snap Price", SnapMode.Price);
             AddSnapMenuItem("Snap Candle", SnapMode.CandleOHLC);
             _btnSnapMode.Text = "Snap: None";
-
-            _btnAnnotations = new ToolStripDropDownButton("Annotations")
-            {
-                AutoToolTip = false,
-                DisplayStyle = ToolStripItemDisplayStyle.Text
-            };
-            var saveItem = new ToolStripMenuItem("Save...");
-            saveItem.Click += (s, e) => SaveAnnotationsRequested?.Invoke();
-            var loadItem = new ToolStripMenuItem("Load...");
-            loadItem.Click += (s, e) => LoadAnnotationsRequested?.Invoke();
-            _btnAnnotations.DropDownItems.Add(saveItem);
-            _btnAnnotations.DropDownItems.Add(loadItem);
-
-            Items.Add(_btnDraw);
-            Items.Add(new ToolStripSeparator());
-            Items.Add(_btnUndo);
-            Items.Add(_btnRedo);
-            Items.Add(_btnDelete);
-            Items.Add(_btnClearAll);
-            Items.Add(new ToolStripSeparator());
-            Items.Add(_btnSnap);
             Items.Add(_btnSnapMode);
-            Items.Add(_btnAnnotations);
+
+            Items.Add(new ToolStripSeparator { Margin = new Padding(0, 8, 0, 4) });
+            Items.Add(CreateSectionLabel("Annotations"));
+            _btnSaveAnnotations = BuildButton("Save...", (s, e) => SaveAnnotationsRequested?.Invoke());
+            _btnLoadAnnotations = BuildButton("Load...", (s, e) => LoadAnnotationsRequested?.Invoke());
+            Items.Add(_btnSaveAnnotations);
+            Items.Add(_btnLoadAnnotations);
+
+            SetActiveDrawMode(ChartDrawMode.None);
         }
 
-        private void AddDrawMenuItem(string text, ChartDrawMode mode)
+        private ToolStripLabel CreateSectionLabel(string text)
         {
-            var item = new ToolStripMenuItem(text)
+            return new ToolStripLabel(text)
+            {
+                Font = new Font(Font, FontStyle.Bold),
+                ForeColor = SystemColors.ControlDarkDark,
+                Margin = new Padding(0, 6, 0, 2)
+            };
+        }
+
+        private ToolStripButton CreateDrawButton(string text, ChartDrawMode mode)
+        {
+            var button = new ToolStripButton(text)
             {
                 Tag = mode,
-                CheckOnClick = true
+                AutoToolTip = false,
+                DisplayStyle = ToolStripItemDisplayStyle.Text,
+                TextAlign = ContentAlignment.MiddleLeft,
+                AutoSize = false,
+                Width = 140,
+                CheckOnClick = false,
+                Margin = new Padding(0, 0, 0, 2)
             };
-
-            item.Click += (s, e) => OnDrawItemClicked(mode);
-            _btnDraw.DropDownItems.Add(item);
-            _drawItems[mode] = item;
+            button.Click += (s, e) => OnDrawButtonClicked(mode);
+            _drawButtons[mode] = button;
+            return button;
         }
 
         private ToolStripButton BuildButton(string text, EventHandler onClick)
@@ -114,13 +123,17 @@ namespace ChartPro.Toolbars
             var button = new ToolStripButton(text)
             {
                 DisplayStyle = ToolStripItemDisplayStyle.Text,
-                AutoToolTip = false
+                AutoToolTip = false,
+                AutoSize = false,
+                Width = 140,
+                TextAlign = ContentAlignment.MiddleLeft,
+                Margin = new Padding(0, 0, 0, 2)
             };
             button.Click += onClick;
             return button;
         }
 
-        private void OnDrawItemClicked(ChartDrawMode mode)
+        private void OnDrawButtonClicked(ChartDrawMode mode)
         {
             SetActiveDrawMode(mode);
             DrawModeSelected?.Invoke(mode);
@@ -140,7 +153,7 @@ namespace ChartPro.Toolbars
 
         public void SetActiveDrawMode(ChartDrawMode mode)
         {
-            foreach (var kvp in _drawItems)
+            foreach (var kvp in _drawButtons)
                 kvp.Value.Checked = kvp.Key == mode;
         }
 

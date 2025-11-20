@@ -245,7 +245,7 @@ namespace TradingApp.WinUI.Docking
 
             targetAxes.Left.TickGenerator = new ScottPlot.TickGenerators.EmptyTickGenerator();
             targetAxes.Right.TickGenerator = new ScottPlot.TickGenerators.EmptyTickGenerator();
-            targetAxes.Bottom.TickGenerator = new ScottPlot.TickGenerators.EmptyTickGenerator();
+            //targetAxes.Bottom.TickGenerator = new ScottPlot.TickGenerators.EmptyTickGenerator();
             targetAxes.Bottom.Label.Text = string.Empty;
             targetAxes.Left.Label.Text = string.Empty;
 
